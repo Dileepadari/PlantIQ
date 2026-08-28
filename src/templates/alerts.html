@@ -1,87 +1,53 @@
-<style>
-    .container {
-        position: relative;
-        padding: 16px;
-        margin-bottom: 16px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        background-color: #f6f6f6;
-    }
+{% extends "layout.html" %}
+{% import "_icons.html" as ui %}
+{% import "_partials.html" as parts %}
+{% set page_title = 'Alerts' %}
+{% block title %}Alerts | PlantIQ{% endblock %}
 
-    .close {
-        position: absolute;
-        top: 8px;
-        right: 16px;
-        color: #aaa;
-        font-size: 24px;
-        font-weight: bold;
-    }
-
-    .alert-success {
-        border-color: #4CAF50;
-        background-color: #dff0d8;
-        color: #4CAF50;
-    }
-
-    .alert-info {
-        border-color: #2196F3;
-        background-color: #d9edf7;
-        color: #2196F3;
-    }
-
-    .alert-warning {
-        border-color: #f0ad4e;
-        background-color: #fcf8e3;
-        color: #f0ad4e;
-    }
-
-    .alert-danger {
-        border-color: #d9534f;
-        background-color: #f2dede;
-        color: #d9534f;
-    }
-
-    .footer {
-        position: fixed;
-        left: 0;
-        bottom: 0;
-        width: 100%;
-        background-color: #f6f6f6;
-        color: black;
-        text-align: center;
-    }
-</style>
-
-<div class="breadcrumb-wrapper row" style="padding: 80px 20px 0 20px;">
-    <div class="col-12 col-lg-3 col-md-6">
-        <h4 class="page-title">Notications</h4>
-    </div>
-    <div class="col-12 col-lg-9 col-md-6">
-        <ol class="breadcrumb float-right">
-            <li><a href="/home">Home</a></li>
-            <li class="active">/ Notifications</li>
-        </ol>
-    </div>
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Alerts</h1>
+    <p class="lede">
+      {% if alerts %}{{ alerts|length }} open alert{{ '' if alerts|length == 1 else 's' }} raised by the device.
+      {% else %}Nothing open. The device has not flagged anything.{% endif %}
+    </p>
+  </div>
+  {% if alerts %}
+  <div class="actions">
+    <form method="post" action="{{ url_for('views.dismiss_all_alerts') }}">
+      <button class="btn btn-sm" type="submit">{{ ui.icon('check', 15) }} Clear all</button>
+    </form>
+  </div>
+  {% endif %}
 </div>
 
-{% for i in notification %}
-<div class="container alert-{{ i[3]}}">
-    <a class="close" href="/change_seen/{{ i[0] }}">&times;</a>
-    <strong>For {{ i[1] }} : </strong> {{ i[2] }}.
-    <div class="grey-text" style="text-align: right;">{{ i[4] }}</div>
+{% if alerts %}
+{% for alert in alerts %}
+<div class="alert-item" data-type="{{ alert.type }}">
+  <span class="mark">{{ ui.icon('alert', 17) }}</span>
+  <div class="body">
+    <div class="msg">{{ alert.message }}</div>
+    <div class="meta">
+      <span class="pill pill-{{ alert.type }}">{{ alert.type }}</span>
+      <span>{{ alert.plant }}</span>
+      <span>&middot;</span>
+      <span>{{ alert.recorded_at }}</span>
+      <span>&middot;</span>
+      <span>{{ alert.age }} ago</span>
+    </div>
+  </div>
+  <form method="post" action="{{ url_for('views.dismiss_alert', notification_id=alert.id) }}">
+    <button class="icon-btn" type="submit" aria-label="Dismiss this alert" title="Dismiss">
+      {{ ui.icon('x', 16) }}
+    </button>
+  </form>
 </div>
 {% endfor %}
-{% if notifications == [[]] %}
-<h3 style="text-align: center;margin-top: 100px;">No Notifications</h3>
+{% else %}
+<div class="card">
+  {{ parts.empty_state('check', 'All clear',
+     'No open alerts. New ones appear here as soon as the device reports a threshold breach.') }}
+</div>
 {% endif %}
-<script>
-    var close = document.getElementsByClassName("close");
-    var i;
-
-    for (i = 0; i < close.length; i++) {
-        close[i].onclick = function () {
-            var div = this.parentElement;
-            div.style.display = "none";
-        }
-    }
-</script>
+{% endblock %}

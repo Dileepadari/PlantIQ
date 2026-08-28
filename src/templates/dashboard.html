@@ -1,0 +1,117 @@
+{% extends "layout.html" %}
+{% import "_icons.html" as ui %}
+{% import "_partials.html" as parts %}
+{% set page_title = 'Dashboard' %}
+{% block title %}Dashboard | PlantIQ{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Hello, {{ user['Name'].split()[0] }}</h1>
+    <p class="lede">
+      {{ 'Latest readings' if feed.stale else 'Live conditions' }} for
+      <strong>{{ user['plant'] or 'your plant' }}</strong>{% if feed.age %},
+      recorded {{ feed.age }}{% endif %}.
+    </p>
+  </div>
+  <div class="actions">
+    {% if summary.overall == 'ok' %}
+    <span class="pill pill-ok">{{ ui.icon('check', 12) }} All {{ summary.counts.ok }} readings healthy</span>
+    {% elif summary.overall == 'alert' %}
+    <span class="pill pill-alert">{{ ui.icon('alert', 12) }} {{ summary.counts.alert }} out of range</span>
+    {% else %}
+    <span class="pill pill-unknown">Awaiting data</span>
+    {% endif %}
+    <span class="faint" style="font-size:.78rem" data-updated></span>
+  </div>
+</div>
+
+{{ parts.feed_banner(feed) }}
+
+<div class="grid grid-metrics" data-live-metrics="{{ feed.readings|length or 20 }}"
+     style="margin-bottom:14px">
+  {% for metric in metrics %}
+  {{ parts.metric_tile(metric, feed.latest) }}
+  {% endfor %}
+</div>
+
+<div class="grid grid-2">
+  <div class="card" style="grid-column: 1 / -1">
+    <div class="card-head">
+      <h2>Volatile organic compounds</h2>
+      <span class="sub">last {{ chart|length }} readings, ppb</span>
+      <span class="right">
+        <a class="btn btn-sm btn-ghost" href="{{ url_for('views.statistics') }}">
+          {{ ui.icon('chart', 15) }} All sensors
+        </a>
+      </span>
+    </div>
+    <div class="card-body">
+      <div data-chart='{{ chart|tojson }}' data-series="voc" data-unit="ppb"
+           data-color="var(--c-voc)" data-height="250" data-label="VOC"></div>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-2" style="margin-top:14px">
+  <div class="card">
+    <div class="card-head">
+      <h2>Threshold check</h2>
+      <span class="sub">{{ plant['plant_name'] if plant else 'no plant matched' }}</span>
+      <span class="right">
+        <a class="btn btn-sm btn-ghost" href="{{ url_for('views.analysis') }}">Details</a>
+      </span>
+    </div>
+    {% if plant %}
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr><th>Sensor</th><th>Now</th><th>Safe range</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+          <tr>
+            <td class="label-cell">{{ row.label }}</td>
+            <td>{{ row.value | metric(' ' ~ row.unit) }}</td>
+            <td class="faint">
+              {% if row.min is not none %}{{ '%g'|format(row.min) }} - {{ '%g'|format(row.max) }} {{ row.unit }}
+              {% else %}not set{% endif %}
+            </td>
+            <td>{{ parts.status_pill(row.status) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    {{ parts.empty_state('leaf', 'No thresholds for this plant',
+       'Pick a plant that exists in the database from Settings to see threshold checks.') }}
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h2>Recent alerts</h2>
+      <span class="right">
+        <a class="btn btn-sm btn-ghost" href="{{ url_for('views.alerts') }}">View all</a>
+      </span>
+    </div>
+    <div class="card-body">
+      {% if unread %}
+      {% for alert in unread[:5] %}
+      <div class="alert-item" data-type="{{ alert.type }}" style="margin-bottom:8px">
+        <span class="mark">{{ ui.icon('alert', 17) }}</span>
+        <div class="body">
+          <div class="msg">{{ alert.message }}</div>
+          <div class="meta"><span>{{ alert.plant }}</span><span>&middot;</span><span>{{ alert.age }} ago</span></div>
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      {{ parts.empty_state('check', 'Nothing needs attention',
+         'No open alerts. The plant is within its thresholds.') }}
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

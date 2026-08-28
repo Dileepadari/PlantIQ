@@ -1,59 +1,54 @@
-<div class="main-content" loading="lazy">
-  <div class="breadcrumb-wrapper row">
-    <div class="col-12 col-lg-3 col-md-6">
-      <h4 class="page-title">Statistics</h4>
-    </div>
-    <div class="col-12 col-lg-9 col-md-6">
-      <ol class="breadcrumb float-right">
-        <li><a href="/home">Home</a></li>
-        <li class="active">/ statistics</li>
-      </ol>
-    </div>
+{% extends "layout.html" %}
+{% import "_icons.html" as ui %}
+{% import "_partials.html" as parts %}
+{% set page_title = 'Statistics' %}
+{% block title %}Statistics | PlantIQ{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Statistics</h1>
+    <p class="lede">Every sensor over the last {{ count }} readings.</p>
   </div>
-  <h1 style="text-align: center;">Analytic Graphs of the Sensors</h1>
-  <br><br>
-  <div class="grid" style="
-      display: flex;
-      column-gap: 100px;
-      row-gap: 150px;
-      justify-content: space-around;
-      flex-wrap: wrap;
-      margin-left: 2vw;
-    ">
-    <div>
-      <h2 style="text-align: center;">Last {{ user[7] }} values for Temeperature</h2>
-      <iframe width="450" loading="lazy" height="260" style="border: 1px solid #cccccc"
-        src="https://thingspeak.com/channels/2281910/charts/1?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results={{user[7]}}&type=line&timezone=Asia/Kolkata"></iframe>
-    </div>
-
-    <div>
-      <h2 style="text-align: center;">Last {{ user[7] }} values for Soil Moisture</h2>
-      <iframe width="450" loading="lazy" height="260" style="border: 1px solid #cccccc"
-        src="https://thingspeak.com/channels/2281910/charts/2?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results={{user[7]}}&type=line&timezone=Asia/Kolkata"></iframe>
-    </div>
-
-    <div>
-      <h2 style="text-align: center;">Last {{ user[7] }} values for Light Intensity</h2>
-      <iframe width="450" loading="lazy" height="260" style="border: 1px solid #cccccc"
-        src="https://thingspeak.com/channels/2281910/charts/3?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results={{user[7]}}&type=line&timezone=Asia/Kolkata"></iframe>
-    </div>
-
-    <div>
-      <h2 style="text-align: center;">Last {{ user[7] }} values for VOC</h2>
-      <iframe width="450" loading="lazy" height="260" style="border: 1px solid #cccccc"
-        src="https://thingspeak.com/channels/2281910/charts/4?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results={{user[7]}}&type=line&timezone=Asia/Kolkata"></iframe>
-    </div>
-
-    <div>
-      <h2 style="text-align: center;">Last {{ user[7] }} values for Carbondioxide</h2>
-      <iframe width="450" height="260" style="border: 1px solid #cccccc"
-        src="https://thingspeak.com/channels/2281910/charts/5?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results={{user[7]}}&type=line&timezone=Asia/Kolkata"></iframe>
-    </div>
-
-    <div>
-      <h2 style="text-align: center;">Last {{ user[7] }} values for Humidity</h2>
-      <iframe width="450" height="260" style="border: 1px solid #cccccc"
-        src="https://thingspeak.com/channels/2281910/charts/6?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results={{user[7]}}&type=line&timezone=Asia/Kolkata"></iframe>
-    </div>
+  <div class="actions">
+    <a class="btn btn-sm" href="{{ url_for('views.settings') }}">
+      {{ ui.icon('cog', 15) }} Change window
+    </a>
   </div>
 </div>
+
+{{ parts.feed_banner(feed) }}
+
+{% if feed.readings %}
+<div class="grid grid-charts">
+  {% for entry in charts %}
+  <div class="card">
+    <div class="card-head">
+      <h2>{{ entry.metric.label }}</h2>
+      <span class="sub">{{ entry.metric.unit }}</span>
+      <span class="right">
+        {% set points = entry.points %}
+        {% if points %}
+        <span class="pill pill-muted">
+          now {{ '%g'|format(points[-1].value) }} {{ entry.metric.unit }}
+        </span>
+        {% endif %}
+      </span>
+    </div>
+    <div class="card-body">
+      <div data-chart='{{ entry.points|tojson }}'
+           data-color="var(--c-{{ entry.metric.accent }})"
+           data-unit="{{ entry.metric.unit }}"
+           data-label="{{ entry.metric.label }}"
+           data-height="200"></div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card">
+  {{ parts.empty_state('chart', 'No readings available',
+     'PlantIQ could not load data from ThingSpeak. Check the device and try again.') }}
+</div>
+{% endif %}
+{% endblock %}

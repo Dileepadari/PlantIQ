@@ -1,8 +1,2 @@
-flask
-OM2M
-json
-requests
-sqlite3
-datetime
-Thingspeak_account
-jquery
+Flask>=3.0
+requests>=2.31

@@ -1,179 +1,180 @@
-<style>
-    h1 {
-        text-align: center;
-        color: #4CAF50;
-    }
+{% extends "layout.html" %}
+{% import "_icons.html" as ui %}
+{% import "_partials.html" as parts %}
+{% set page_title = 'History' %}
+{% block title %}History | PlantIQ{% endblock %}
 
-    form {
-        display: flex;
-        justify-content: center;
-        margin-top: 50px;
-    }
-
-    label {
-        margin-right: 10px;
-        font-weight: bold;
-        color: #4CAF50;
-    }
-
-    input[type="date"] {
-        padding: 5px;
-        border-radius: 5px;
-        border: none;
-        margin-right: 10px;
-    }
-
-    button[type="submit"] {
-        background-color: #4CAF50;
-        color: white;
-        border-radius: 5px;
-        padding: 5px 10px;
-        cursor: pointer;
-    }
-
-    #scroller {
-        max-height: 100vh;
-        overflow: auto;
-    }
-
-    table {
-        border: solid white 2px;
-        border-collapse: collapse;
-        width: 90%;
-        margin: 50px auto 0 auto;
-        background-color: white;
-        border-radius: 10px;
-    }
-
-    th {
-        background-color: #4CAF50;
-        color: white;
-        font-weight: bold;
-        text-align: left;
-        padding: 10px;
-        position: sticky;
-        top: 0;
-    }
-
-    td {
-        border: 1px solid #ddd;
-        padding: 10px;
-    }
-
-    tr:nth-child(even) {
-        background-color: #f2f2f2;
-    }
-
-    .footer {
-        position: fixed;
-        left: 0;
-        bottom: 0;
-        width: 100%;
-        background-color: #f6f6f6;
-        color: black;
-        text-align: center;
-    }
-</style>
-<div class="breadcrumb-wrapper row" style="padding: 80px 20px 0 20px;">
-    <div class="col-12 col-lg-3 col-md-6">
-        <h4 class="page-title">History</h4>
-    </div>
-    <div class="col-12 col-lg-9 col-md-6">
-        <ol class="breadcrumb float-right">
-            <li><a href="/home">Home</a></li>
-            <li class="active">/ History</li>
-        </ol>
-    </div>
-</div>
-<h1>History data of the Plant</h1>
-<form>
-    <label for="fromDate">From:</label>
-    <input type="date" id="fromDate" name="fromDate">
-    <label for="toDate">To:</label>
-    <input type="date" id="toDate" name="toDate">
-    <button type="submit">Submit</button>
-</form>
-<br>
-<div id="scroller">
-    <table id="historyTable">
-        <thead id="head_tab">
-            <tr>
-                <th>Date-Time</th>
-                <th>Temperature</th>
-                <th>Humidity</th>
-                <th>VOC</th>
-                <th>CO2</th>
-                <th>Soil moisture</th>
-                <th>Light intensity</th>
-            </tr>
-        </thead>
-        <tbody id="body_tab">
-        </tbody>
-    </table>
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>History</h1>
+    <p class="lede">Every reading the device recorded between two dates.</p>
+  </div>
 </div>
 
+<div class="card" style="margin-bottom:14px">
+  <div class="card-body">
+    <form id="range-form" class="form-row">
+      <div class="field">
+        <label for="start">From</label>
+        <input type="date" id="start" name="start" required />
+      </div>
+      <div class="field">
+        <label for="end">To</label>
+        <input type="date" id="end" name="end" required />
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" type="submit">
+          {{ ui.icon('search', 15) }} Load
+        </button>
+        <button class="btn" type="button" id="download" disabled>
+          {{ ui.icon('download', 15) }} CSV
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <h2>Readings</h2>
+    <span class="sub" id="count">nothing loaded yet</span>
+  </div>
+  <div id="result">
+    {{ parts.empty_state('clock', 'Pick a date range',
+       'Choose a start and end date, then load the readings recorded in between.') }}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
 <script>
-    today = document.getElementById("toDate").valueAsDate = new Date();
-    yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 15);
-    document.getElementById("fromDate").valueAsDate = yesterday;
-</script>
-<script>
-    const channelId = 2281910;
-    const apiKey = "1M6NTVUZOV87FRI0";
+(function () {
+  var form = document.getElementById('range-form');
+  var start = document.getElementById('start');
+  var end = document.getElementById('end');
+  var result = document.getElementById('result');
+  var count = document.getElementById('count');
+  var download = document.getElementById('download');
+  var rows = [];
 
-    const form = document.querySelector('form');
-    const fromDateInput = form.querySelector('#fromDate');
-    const toDateInput = form.querySelector('#toDate');
-    const tableBody = document.querySelector('#historyTable tbody');
+  var COLUMNS = [
+    ['label', 'Recorded'],
+    ['temperature', 'Temp (C)'],
+    ['humidity', 'Humidity (%)'],
+    ['moisture', 'Moisture (%)'],
+    ['light', 'Light (%)'],
+    ['voc', 'VOC (ppb)'],
+    ['co2', 'CO2 (ppm)']
+  ];
 
-    form.addEventListener('submit', (event) => {
-        event.preventDefault();
+  /* valueAsDate reads the date back as UTC, which shifts the day for anyone
+     east or west of Greenwich. Format the local date and set .value instead. */
+  function toISODate(date) {
+    var m = String(date.getMonth() + 1).padStart(2, '0');
+    var d = String(date.getDate()).padStart(2, '0');
+    return date.getFullYear() + '-' + m + '-' + d;
+  }
 
-        const fromDate = fromDateInput.value;
-        const toDate = toDateInput.value;
+  function setRange(endDate, days) {
+    var from = new Date(endDate.getTime());
+    from.setDate(from.getDate() - days);
+    end.value = toISODate(endDate);
+    start.value = toISODate(from);
+  }
 
+  setRange(new Date(), 14);
 
-        const url = `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&start=${fromDate}&end=${toDate}&timezone=Asia/Kolkata`;
+  function cell(value) {
+    return value === null || value === undefined ? '--' : value;
+  }
 
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                tableBody.innerHTML = '';
-                data.feeds.forEach(feed => {
-                    const row = document.createElement('tr');
-                    const dateCell = document.createElement('td');
-                    dateCell.textContent = feed.created_at;
-                    row.appendChild(dateCell);
+  function render(readings, latestAvailable) {
+    rows = readings;
+    if (!readings.length) {
+      var hint = latestAvailable
+        ? 'The most recent reading on this channel is from <strong>' +
+          latestAvailable + '</strong>. Try a range that covers it.'
+        : 'The device may have been offline. Try a wider range.';
+      result.innerHTML = '<div class="empty"><h3>No readings in that range</h3>' +
+        '<p>' + hint + '</p>' +
+        (latestAvailable
+          ? '<div class="form-actions" style="justify-content:center">' +
+            '<button class="btn btn-sm" type="button" id="jump">Jump to ' +
+            latestAvailable + '</button></div>'
+          : '') +
+        '</div>';
+      var jump = document.getElementById('jump');
+      if (jump) {
+        jump.addEventListener('click', function () {
+          setRange(new Date(latestAvailable + 'T00:00:00'), 14);
+          form.dispatchEvent(new Event('submit'));
+        });
+      }
+      download.disabled = true;
+      return;
+    }
+    var head = COLUMNS.map(function (c) { return '<th>' + c[1] + '</th>'; }).join('');
+    var body = readings.map(function (r) {
+      return '<tr>' + COLUMNS.map(function (c) {
+        return '<td>' + cell(r[c[0]]) + '</td>';
+      }).join('') + '</tr>';
+    }).join('');
+    result.innerHTML =
+      '<div class="table-wrap" style="max-height:60vh;overflow-y:auto">' +
+      '<table class="data"><thead><tr>' + head + '</tr></thead><tbody>' + body +
+      '</tbody></table></div>';
+    download.disabled = false;
+  }
 
-                    const field1Cell = document.createElement('td');
-                    field1Cell.textContent = feed.field1;
-                    row.appendChild(field1Cell);
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    if (start.value && end.value && start.value > end.value) {
+      count.textContent = 'start date must come before the end date';
+      return;
+    }
+    count.textContent = 'loading...';
+    result.innerHTML = '<div class="empty"><p class="faint">Fetching readings...</p></div>';
+    download.disabled = true;
 
-                    const field2Cell = document.createElement('td');
-                    field2Cell.textContent = feed.field6;
-                    row.appendChild(field2Cell);
+    fetch('/api/history?start=' + encodeURIComponent(start.value) +
+          '&end=' + encodeURIComponent(end.value))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.online) {
+          count.textContent = 'sensor feed unreachable';
+          result.innerHTML = '<div class="empty"><h3>Could not reach ThingSpeak</h3>' +
+            '<p>Check the network connection and try again.</p></div>';
+          return;
+        }
+        count.textContent = data.count + ' reading' + (data.count === 1 ? '' : 's');
+        render(data.readings, data.latest_available);
+      })
+      .catch(function () {
+        count.textContent = 'request failed';
+        result.innerHTML = '<div class="empty"><h3>Request failed</h3>' +
+          '<p>Something went wrong loading that range.</p></div>';
+      });
+  });
 
-                    const field3Cell = document.createElement('td');
-                    field3Cell.textContent = feed.field4;
-                    row.appendChild(field3Cell);
-
-                    const field4Cell = document.createElement('td');
-                    field4Cell.textContent = feed.field5;
-                    row.appendChild(field4Cell);
-
-                    const field5Cell = document.createElement('td');
-                    field5Cell.textContent = feed.field2;
-                    row.appendChild(field5Cell);
-
-                    const field6Cell = document.createElement('td');
-                    field6Cell.textContent = feed.field3;
-                    row.appendChild(field6Cell);
-
-                    tableBody.appendChild(row);
-                });
-            })
-            .catch(error => console.error(error));
+  download.addEventListener('click', function () {
+    if (!rows.length) return;
+    var csv = [COLUMNS.map(function (c) { return c[1]; }).join(',')];
+    rows.forEach(function (r) {
+      csv.push(COLUMNS.map(function (c) {
+        var v = r[c[0]];
+        return v === null || v === undefined ? '' : '"' + String(v).replace(/"/g, '""') + '"';
+      }).join(','));
     });
-
+    var blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+    var link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'plantiq-history-' + start.value + '-to-' + end.value + '.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+  });
+})();
 </script>
+{% endblock %}

@@ -1,156 +1,89 @@
-<style>
-    .analysis-block {
-        margin: 20px;
-        padding: 20px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
+{% extends "layout.html" %}
+{% import "_icons.html" as ui %}
+{% import "_partials.html" as parts %}
+{% set page_title = 'Analysis' %}
+{% block title %}Analysis | PlantIQ{% endblock %}
 
-    table {
-        border-collapse: collapse;
-        width: 100%;
-    }
-
-    th,
-    td {
-        text-align: left;
-        padding: 8px;
-    }
-
-    th {
-        background-color: #f2f2f2;
-    }
-
-    tr:nth-child(even) {
-        background-color: #f2f2f2;
-    }
-
-    .exceeded {
-        background-color: #ffcccc;
-        color: #ff0000;
-        font-weight: bold;
-    }
-
-    .ok {
-        background-color: #ccffcc;
-        color: #008000;
-        font-weight: bold;
-    }
-
-    .footer {
-        position: fixed;
-        left: 0;
-        bottom: 0;
-        width: 100%;
-        background-color: #f2f2f2;
-        color: black;
-        text-align: center;
-    }
-</style>
-<div class="breadcrumb-wrapper row" style="padding: 80px 20px 0 20px;">
-    <div class="col-12 col-lg-3 col-md-6">
-        <h4 class="page-title">Analysis</h4>
-    </div>
-    <div class="col-12 col-lg-9 col-md-6">
-        <ol class="breadcrumb float-right">
-            <li><a href="/home">Home</a></li>
-            <li class="active">/ Analysis</li>
-        </ol>
-    </div>
-</div>
-{% if thresholds == [] %}
-<h2 style="text-align: center;">The plant selected by you is not in the database</h2>
-{% endif %}
-{% if thresholds != [] %}
-<h2 style="text-align: center;">Threshold Analysis for {{ thresholds[0][1] }} plant</h2>
-<div class="analysis-block">
-    <table>
-        <thead>
-            <tr>
-                <th>Sensor Name</th>
-                <th>Threshold Value</th>
-                <th>Current Value</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Temperature</td>
-                <td>{{ thresholds[0][4] }}°C - {{ thresholds[0][5] }}°C</td>
-                <td>{{ data['feeds'][0]['field1'] }}°C</td>
-                {% if data['feeds'][0]['field1']|int > thresholds[0][4]|int and data['feeds'][0]['field1']|int <
-                    thresholds[0][5]|int %} <td class="ok">OK</td>
-                    {%else%}
-                    <td class="exceeded">Danger state</td>
-                    {% endif %}
-            </tr>
-            <tr>
-                <td>Humidity</td>
-                <td>{{ thresholds[0][6] }}% - {{ thresholds[0][7] }}%</td>
-                <td>{{ data['feeds'][0]['field6'] }}%</td>
-                {% if data['feeds'][0]['field6']|int > thresholds[0][6]|int and data['feeds'][0]['field6']|int <
-                    thresholds[0][7]|int %} <td class="ok">OK</td>
-                    {%else%}
-                    <td class="exceeded">Danger state</td>
-                    {% endif %}
-            </tr>
-            <tr>
-                <td>Light Intensity</td>
-                <td>{{ thresholds[0][12] }} % - {{ thresholds[0][13] }} %</td>
-                <td>{{ data['feeds'][0]['field3'] }} lux</td>
-                {% if data['feeds'][0]['field3']|int > thresholds[0][12]|int and data['feeds'][0]['field3']|int <
-                    thresholds[0][13]|int %} <td class="ok">OK</td>
-                    {%else%}
-                    <td class="exceeded">Danger state</td>
-                    {% endif %}
-            </tr>
-            <tr>
-                <td>Soil Moisture</td>
-                <td>{{ thresholds[0][8] }} % - {{ thresholds[0][9] }} %</td>
-                <td>{{ data['feeds'][0]['field2'] }}%</td>
-                {% if data['feeds'][0]['field2']|int > thresholds[0][8]|int and data['feeds'][0]['field2']|int <
-                    thresholds[0][9]|int %} <td class="ok">OK</td>
-                    {%else%}
-                    <td class="exceeded">Danger state</td>
-                    {% endif %}
-            </tr>
-            <tr>
-                <td>SGP CO2</td>
-                <td>{{ thresholds[0][10] }} ppm - {{ thresholds[0][11] }} ppm</td>
-                <td>{{ data['feeds'][0]['field5'] }} ppm</td>
-                {% if data['feeds'][0]['field5']|int >= thresholds[0][10]|int and data['feeds'][0]['field5']|int <=
-                    thresholds[0][11]|int %} <td class="ok">OK</td>
-                    {%else%}
-                    <td class="exceeded">Danger state</td>
-                    {% endif %}
-            </tr>
-            <tr>
-                <td>SGP VOC</td>
-                <td>{{ thresholds[0][2] }} ppb - {{ thresholds[0][3] }} ppb</td>
-                <td>{{ data['feeds'][0]['field4'] }} ppb</td>
-                {% if data['feeds'][0]['field4']|int >= thresholds[0][2]|int and data['feeds'][0]['field4']|int <=
-                    thresholds[0][3]|int %} <td class="ok">OK</td>
-                    {%else%}
-                    <td class="exceeded">Danger state</td>
-                    {% endif %}
-            </tr>
-        </tbody>
-    </table>
-</div>
-<div class="analysis-paragraph" style="padding: 20px;">
-    <h2>Project Analysis</h2>
-    <p>
-        The Smart Farming Pathogen Analysis project is designed to monitor various environmental parameters such as
-        temperature,
-        humidity, light intensity, soil moisture, and air quality (CO2 and VOC levels) in a farm setting. The threshold
-        analysis
-        provided on this page helps farmers identify potential issues, such as pathogen attacks. When a sensor reading
-        exceeds the
-        predefined threshold, it is marked as <b style="color: red;">"Danger state,"</b> signaling a potential problem.
-        Otherwise, it is marked as <b style="color: green;">"Ok."</b>
-        This real-time data analysis empowers farmers to take timely action to protect their crops and improve overall
-        farm productivity.
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Threshold analysis</h1>
+    <p class="lede">
+      {% if plant %}Safe ranges for <strong>{{ plant['plant_name'] }}</strong> against the newest reading.
+      {% else %}No thresholds are stored for the plant you selected.{% endif %}
     </p>
+  </div>
+  <div class="actions">
+    {% if plant %}
+    <span class="pill {{ 'pill-ok' if summary.counts.ok else 'pill-unknown' }}">{{ summary.counts.ok }} healthy</span>
+    <span class="pill {{ 'pill-alert' if summary.counts.alert else 'pill-unknown' }}">{{ summary.counts.alert }} out of range</span>
+    {% if summary.counts.unknown %}<span class="pill pill-unknown">{{ summary.counts.unknown }} no data</span>{% endif %}
+    {% endif %}
+  </div>
+</div>
+
+{{ parts.feed_banner(feed) }}
+
+{% if plant %}
+<div class="card" style="margin-bottom:14px">
+  <div class="card-head">
+    <h2>Sensor status</h2>
+    <span class="sub">{% if feed.latest %}reading from {{ feed.latest.label }}{% else %}no reading{% endif %}</span>
+  </div>
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr><th>Sensor</th><th>Safe range</th><th>Current</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr>
+          <td class="label-cell">{{ row.label }}</td>
+          <td class="faint">
+            {% if row.min is not none %}{{ '%g'|format(row.min) }} - {{ '%g'|format(row.max) }} {{ row.unit }}
+            {% else %}not set{% endif %}
+          </td>
+          <td>{{ row.value | metric(' ' ~ row.unit) }}</td>
+          <td>{{ parts.status_pill(row.status) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head"><h2>How to read this</h2></div>
+  <div class="card-body prose">
+    <p>
+      PlantIQ watches temperature, humidity, soil moisture, light, CO2 and volatile
+      organic compounds. Each plant in the database carries a safe range for those
+      six values. A reading inside the range is marked <strong>Healthy</strong>; a
+      reading outside it is marked <strong>Out of range</strong>.
+    </p>
+    <p>
+      A rising VOC level alongside a temperature or humidity shift is the pattern
+      that usually precedes a pathogen attack, which is what the project set out to
+      catch early. When the firmware sees a value cross a threshold it posts an
+      alert, which shows up on the <a href="{{ url_for('views.alerts') }}">Alerts</a> page.
+    </p>
+  </div>
+</div>
+{% else %}
+<div class="card">
+  {{ parts.empty_state('leaf', 'Plant not in the database',
+     'PlantIQ has no threshold profile for the plant on your account.') }}
+  <div class="card-body" style="border-top:1px solid var(--border)">
+    <p class="muted" style="font-size:.88rem">Profiles currently available:</p>
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+      {% for p in known_plants %}
+      <span class="pill pill-muted">{{ p['plant_name'] }}</span>
+      {% endfor %}
+    </div>
+    <div class="form-actions">
+      <a class="btn btn-primary" href="{{ url_for('views.settings') }}">Choose a plant</a>
+    </div>
+  </div>
 </div>
 {% endif %}
+{% endblock %}

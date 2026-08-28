@@ -1,52 +1,41 @@
-<html lang="en">
+{% extends "_auth_layout.html" %}
+{% import "_icons.html" as ui %}
+{% set art_image = 'images/plant.jpg' %}
+{% block title %}Sign in | PlantIQ{% endblock %}
+{% block art_heading %}Know your plant is in trouble before it looks it.{% endblock %}
+{% block art_body %}
+PlantIQ watches temperature, humidity, soil moisture, light, CO2 and the
+volatile compounds a stressed plant releases.
+{% endblock %}
 
-<head>
-  <meta charset="UTF-8">
-  <title> greenplant | Login </title>
-  <link rel="stylesheet" href="../static/styles/register.css">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body>
-  <div class="big">
-    <div class="container">
+{% block form %}
+<div class="head">
+  <h1>Sign in</h1>
+  <p>Use the email or username on your PlantIQ account.</p>
+</div>
 
-      <div class="cover">
-        <div class="front">
-          <img src="../static/images/plant.jpg" alt="">
-          <div class="text">
-            <span class="text-1">Farmer is the backbone <br> of the Country</span>
-            <span class="text-2">A green Plant is the backbone of the Farmer</span>
-          </div>
-        </div>
+{% if error %}
+<div class="flash" data-type="error">{{ ui.icon('alert') }}<span>{{ error }}</span></div>
+{% endif %}
 
-      </div>
-      <div class="forms" style="padding: 50px 20px;">
-        <div class="form-content" >
-          <div class="login-form" >
-            <div class="title">Login</div>
-            <form method="POST" action="/login">
-              <div class="input-boxes">
-                <div class="input-box">
-                  <input type="text" name="username" placeholder="Enter email" required>
-                </div>
-                <div class="input-box">
-                  <input type="password" name="password" placeholder="Enter your Password" required>
-                </div>
-                <div class="button input-box">
-                  <input type="submit" value="Submit">
-                </div>
-                {% if error %}
-                <h3 style="color:red;text-align: center;">Enter the Correct Credentials</h3>
-                {% endif %}
-                <br>
-                <div class="text sign-up-text">Don't have an account? <a href="/signup" style="color:red;">Signup now</a></div>
-                <br>
-               	<div class="text text sign-up-text">Use these credentials to test without signing up<br>email: test1@gmail.com; password: test1
-              </div>
-            </form>
+<form method="post" action="{{ url_for('auth.login') }}">
+  <div class="field">
+    <label for="username">Email or username</label>
+    <input type="text" id="username" name="username" autocomplete="username"
+           placeholder="you@example.com" required autofocus />
+  </div>
+  <div class="field">
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password"
+           autocomplete="current-password" placeholder="Your password" required />
+  </div>
+  <button class="btn btn-primary" type="submit">Sign in</button>
+</form>
 
-          </div>
-        </div>
-      </div>
-    </div>
-</body>
+<p class="auth-alt">New here? <a href="{{ url_for('auth.signup') }}">Create an account</a></p>
+
+<div class="demo-note">
+  Try it without signing up:
+  <code>test1@gmail.com</code> / <code>test1</code>
+</div>
+{% endblock %}

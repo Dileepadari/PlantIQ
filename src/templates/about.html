@@ -1,76 +1,106 @@
-<div class="main-content" style="padding-left: 35px;padding-right: 40px;text-align: justify;">
-    <div class="breadcrumb-wrapper row">
-        <div class="col-12 col-lg-3 col-md-6">
-            <h4 class="page-title">About</h4>
-        </div>
-        <div class="col-12 col-lg-9 col-md-6">
-            <ol class="breadcrumb float-right">
-                <li><a href="/home">Home</a></li>
-                <li class="active">/ About</li>
-            </ol>
-        </div>
-    </div>
-    <div class="nav-logo">
-        <a href="/">
-            <div class="centered-content">
-                <b><img src="{{ url_for('static', filename='images/logo.png') }}" alt="logo"
-                        style="width: 250px;position: absolute;left: 400px;mix-blend-mode: multiply;" /></b>
-            </div>
-        </a>
-        <p style="font-size: 140px;text-align: center;margin-left: 200px;"><strong>GREEN PLANT</strong></p><br>
-        <p style="font-size: 35px;"><strong>INTRO TO WEBSITE</strong>
-        <p>
-        <p style="font-size: 25px;"><strong>GREEN PLANT</strong> is a user-friendly website designed to provide
-            real-time information on plant conditions. The website's intuitive user interface offers a seamless
-            experience for plant enthusiasts, gardeners, and indoor growers.This website shows us the current conditions
-            of the plants by displaying the data outputted by sensors.</p>
-        <p style="font-size: 25px;">In this website, there are several webpages which we can see on the side navigation
-            bar.Home page displays the real time data of all sensors in graph form.Statistics also contain the graph
-            data.Analysis page shows what are the limits of every sensor for which the plant grows safely.Alerts webpage
-            is the place where any alerts or warnings are displayed indicating that sensor value is off limit i.e; the
-            plant is stressed.Also there is Settings where you can change some settings of the website and customise it.
-        </p>
-        <br>
-        <p style="font-size: 35px;"><strong>Uses of the website</strong></p>
-        <p style="font-size: 25px;">Our website is a valuable tool for plant enthusiasts and caretakers, offering the
-            following benefits:</p>
-        <p style="font-size: 25px;"><strong>Optimized Plant Care: </strong>Users can tailor their care routines to each
-            plant's unique needs by constantly monitoring and adjusting humidity, soil moisture, light, and air quality.
-        </p>
-        <p style="font-size: 25px;"><strong>Remote Monitoring: </strong>Accessible from any device with an internet
-            connection, this website enables users to monitor their plants from anywhere, making it ideal for frequent
-            travelers</p>
-        <p style="font-size: 25px;"><strong>Data-Driven Decisions: </strong>Historical data and alerts empower users to
-            make informed decisions about plant care, helping them prevent issues and promote plant growth.</p>
-        <br>
-        <p style="font-size: 35px;"><strong>About Developers</strong></p>
-        <div class="pppp" style="display: flex;justify-content: space-between;">
-            <div class="kpp" style="padding: 20px;width: 48%;">
-                <p style="font-size: 25px;"><strong>Name: </strong>Adari Dileep Kumar</p>
-                <p style="font-size: 25px;"><strong>Current Status: </strong>B.tech CSE,IIIT Hyderabad</p>
-                <p style="font-size: 25px;font-style: italic;"><strong>Contact:
-                    </strong>dileepkumar.adari@students.iiit.ac.in</p>
-            </div>
-            <div class="kpp" style="padding: 20px;width: 48%;">
-                <p style="font-size: 25px;"><strong>Name: </strong>Gajawada Bharath</p>
-                <p style="font-size: 25px;"><strong>Current Status: </strong>B.tech CSE,IIIT Hyderabad</p>
-                <p style="font-size: 25px;font-style: italic;"><strong>Contact:
-                    </strong>gajawada.bharath@students.iiit.ac.in</p>
-            </div>
-        </div>
-        <div class="pppp" style="display: flex;justify-content: space-between;">
-            <div class="kpp" style="padding: 20px;width: 48%;">
-                <p style="font-size: 25px;"><strong>Name: </strong>Chaganti Venkata Karthikeya</p>
-                <p style="font-size: 25px;"><strong>Current Status: </strong>B.tech CSE,IIIT Hyderabad</p>
-                <p style="font-size: 25px;font-style: italic;"><strong>Contact:
-                    </strong>chaganti.venkata@students.iiit.ac.in</p>
-            </div>
-            <div class="kpp" style="padding: 20px;width: 48%;">
-                <p style="font-size: 25px;"><strong>Name: </strong>Sallepalle Naga Revanth Reddy</p>
-                <p style="font-size: 25px;"><strong>Current Status: </strong>B.tech CSE,IIIT Hyderabad</p>
-                <p style="font-size: 25px;font-style: italic;"><strong>Contact:
-                    </strong>naga.revanth@students.iiit.ac.in</p>
-            </div>
-        </div>
-    </div>
+{% extends "layout.html" %}
+{% import "_icons.html" as ui %}
+{% set page_title = 'About' %}
+{% block title %}About | PlantIQ{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>About PlantIQ</h1>
+    <p class="lede">Detecting plant stress early, from the volatile compounds a plant gives off.</p>
+  </div>
 </div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <div class="card-head"><h2>What it does</h2></div>
+    <div class="card-body prose">
+      <p>
+        A plant under attack changes what it emits into the air before it looks
+        unwell. PlantIQ puts a VOC sensor on the plant alongside temperature,
+        humidity, soil moisture, light and CO2, and watches all six together so a
+        pathogen attack shows up while there is still time to act.
+      </p>
+      <p>
+        Sensors run off an ESP32 on an experimental farm. Readings go to
+        ThingSpeak and to an OM2M middlenode; this site reads them back and
+        compares each one against the safe range for the plant you selected.
+      </p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>The pages</h2></div>
+    <div class="card-body prose">
+      <ul>
+        <li><strong>Dashboard</strong> - current value of every sensor and the VOC trend.</li>
+        <li><strong>Statistics</strong> - one chart per sensor over your chosen window.</li>
+        <li><strong>Analysis</strong> - each reading against the plant's safe range.</li>
+        <li><strong>History</strong> - readings between two dates, exportable as CSV.</li>
+        <li><strong>Alerts</strong> - threshold breaches the device reported.</li>
+        <li><strong>Circuit</strong> - how the hardware is wired.</li>
+        <li><strong>Settings</strong> - which plant to watch and how much history to chart.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <div class="card-head"><h2>Sensors</h2></div>
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>Sensor</th><th>Reads</th><th>Principle</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="label-cell">DHT11</td>
+          <td>Temperature, humidity</td>
+          <td class="wrap">A humidity-sensitive polymer and a thermistor, both read as resistance changes.</td>
+        </tr>
+        <tr>
+          <td class="label-cell">Capacitive soil probe</td>
+          <td>Soil moisture</td>
+          <td class="wrap">Dielectric permittivity of the soil rises with water content.</td>
+        </tr>
+        <tr>
+          <td class="label-cell">SGP30</td>
+          <td>CO2, VOC</td>
+          <td class="wrap">A metal-oxide film changes conductivity in the presence of the target gases.</td>
+        </tr>
+        <tr>
+          <td class="label-cell">LDR</td>
+          <td>Light intensity</td>
+          <td class="wrap">Photoconductivity: resistance falls as incident light rises.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <div class="card-head"><h2>Team</h2><span class="sub">Aakashavani, IIIT Hyderabad</span></div>
+  <div class="card-body">
+    <div class="people">
+      <div class="person">
+        <strong>Adari Dileep Kumar</strong>
+        <span>B.Tech CSE</span>
+        <a href="mailto:dileepkumar.adari@students.iiit.ac.in">dileepkumar.adari@students.iiit.ac.in</a>
+      </div>
+      <div class="person">
+        <strong>Gajawada Bharath</strong>
+        <span>B.Tech CSE</span>
+        <a href="mailto:gajawada.bharath@students.iiit.ac.in">gajawada.bharath@students.iiit.ac.in</a>
+      </div>
+      <div class="person">
+        <strong>Chaganti Venkata Karthikeya</strong>
+        <span>B.Tech CSE</span>
+        <a href="mailto:chaganti.venkata@students.iiit.ac.in">chaganti.venkata@students.iiit.ac.in</a>
+      </div>
+      <div class="person">
+        <strong>Sallepalle Naga Revanth Reddy</strong>
+        <span>B.Tech CSE</span>
+        <a href="mailto:naga.revanth@students.iiit.ac.in">naga.revanth@students.iiit.ac.in</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

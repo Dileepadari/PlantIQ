@@ -1,0 +1,49 @@
+{% import "_icons.html" as ui %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>{% block title %}PlantIQ{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('static', filename='images/logo-mark.png') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}" />
+  <script>
+    try {
+      var t = localStorage.getItem('plantiq-theme');
+      if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  </script>
+</head>
+<body>
+<div class="auth">
+  <section class="auth-art"
+           style="--art: url('{{ url_for('static', filename=art_image) }}')">
+    <div class="mark">
+      <span class="logo-badge">
+        <img class="logo-mono" src="{{ url_for('static', filename='images/logo-mark.png') }}" alt="" />
+      </span>
+      <span>PlantIQ</span>
+    </div>
+    <div>
+      <h2>{% block art_heading %}{% endblock %}</h2>
+      <p>{% block art_body %}{% endblock %}</p>
+      <ul class="points">
+        <li>{{ ui.icon('check', 16) }} Six sensors, one live view</li>
+        <li>{{ ui.icon('check', 16) }} Thresholds per plant species</li>
+        <li>{{ ui.icon('check', 16) }} Alerts the moment a reading drifts</li>
+      </ul>
+    </div>
+    <p style="font-size:.8rem;opacity:.7">Aakashavani &middot; IIIT Hyderabad</p>
+  </section>
+
+  <section class="auth-form">
+    <div class="auth-card">
+      {% block form %}{% endblock %}
+    </div>
+  </section>
+</div>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

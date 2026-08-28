@@ -1,109 +1,81 @@
-<style>
-    form {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
+{% extends "layout.html" %}
+{% import "_icons.html" as ui %}
+{% set page_title = 'Settings' %}
+{% block title %}Settings | PlantIQ{% endblock %}
 
-    label {
-        margin-bottom: 10px;
-    }
-
-    input[type="text"],
-    input[type="email"],
-    input[type="password"],
-    input[type="number"] {
-        padding: 5px 10px;
-        margin-bottom: 10px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-    }
-
-    input[type="checkbox"] {
-        margin-bottom: 10px;
-    }
-
-    input[type="submit"],
-    input[type="reset"] {
-        padding: 5px 10px;
-        background-color: #333;
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-
-    input[type="submit"]:hover {
-        background-color: #555;
-    }
-
-    input[type="reset"]:hover {
-        background-color: #555;
-    }
-
-    #pro-img {
-        width: 150px;
-        height: 150px;
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-        border-radius: 50%;
-        margin-bottom: 20px;
-    }
-
-    .footer {
-        position: fixed;
-        left: 0;
-        bottom: 0;
-        width: 100%;
-        background-color: #f6f6f6;
-        color: black;
-        text-align: center;
-    }
-</style>
-<div class="breadcrumb-wrapper row" style="padding: 80px 20px 0 20px;">
-    <div class="col-12 col-lg-3 col-md-6">
-        <h4 class="page-title">Settings</h4>
-    </div>
-    <div class="col-12 col-lg-9 col-md-6">
-        <ol class="breadcrumb float-right">
-            <li><a href="/home">Home</a></li>
-            <li class="active">/ Settings</li>
-        </ol>
-    </div>
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Settings</h1>
+    <p class="lede">Your account and what PlantIQ monitors for you.</p>
+  </div>
 </div>
-<h2 style="text-align: center;">General Settings</h2>
-<img src="{{ url_for('static', filename=user[5]) }}" alt="profile_img" id="pro-img">
-<form method="POST" action="#">
-    <div>
-        <label for="username" style="margin-left: -51px;">Username:</label>
-        <input type="text" id="username" name="username" value="{{user[1]}}" disabled>
+
+{% if error %}
+<div class="flash" data-type="error">{{ ui.icon('alert') }}<span>{{ error }}</span></div>
+{% endif %}
+
+<div class="grid grid-2">
+  <div class="card">
+    <div class="card-head"><h2>Monitoring</h2></div>
+    <div class="card-body">
+      <form method="post" action="{{ url_for('views.settings') }}">
+        <div class="field">
+          <label for="name">Display name</label>
+          <input type="text" id="name" name="name" value="{{ user['Name'] }}" required />
+        </div>
+        <div class="field">
+          <label for="plant">Plant being monitored</label>
+          <input type="text" id="plant" name="plant" list="plant-options"
+                 value="{{ user['plant'] or '' }}" required />
+          <datalist id="plant-options">
+            {% for p in known_plants %}<option value="{{ p['plant_name'] }}"></option>{% endfor %}
+          </datalist>
+          <p class="hint">
+            Thresholds exist for:
+            {% for p in known_plants %}{{ p['plant_name'] }}{{ ', ' if not loop.last }}{% endfor %}
+          </p>
+        </div>
+        <div class="field">
+          <label for="reading">Readings shown in charts</label>
+          <input type="number" id="reading" name="reading" min="{{ config.MIN_READINGS }}"
+                 max="{{ config.MAX_READINGS }}" value="{{ user['reading_no'] }}" required />
+          <p class="hint">Between {{ config.MIN_READINGS }} and {{ config.MAX_READINGS }}.</p>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit">Save changes</button>
+          <button class="btn" type="reset">Reset</button>
+        </div>
+      </form>
     </div>
-    <div>
-        <label for="name" style="margin-left: -21px;">Name:</label>
-        <input type="text" id="name" name="name" value="{{user[4]}}" required>
+  </div>
+
+  <div class="card" style="align-self:start">
+    <div class="card-head"><h2>Account</h2></div>
+    <div class="card-body">
+      <div style="display:flex;gap:14px;align-items:center;margin-bottom:18px">
+        <img class="avatar" style="width:56px;height:56px"
+             src="{{ url_for('static', filename=user['pro_img'] or 'images/profile.png') }}" alt="" />
+        <div>
+          <strong style="display:block">{{ user['Name'] }}</strong>
+          <span class="faint" style="font-size:.85rem">@{{ user['username'] }}</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="username">Username</label>
+        <input type="text" id="username" value="{{ user['username'] }}" disabled />
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" value="{{ user['email'] }}" disabled />
+      </div>
+      <p class="hint">Username and email are fixed once the account is created.</p>
+      <div class="form-actions">
+        <a class="btn btn-danger" href="{{ url_for('auth.logout') }}">
+          {{ ui.icon('logout', 15) }} Sign out
+        </a>
+      </div>
     </div>
-    <div>
-        <label for="email" style="margin-left: -20px;">Email:</label>
-        <input type="email" id="email" value="{{user[2]}}" disabled>
-    </div>
-    <div>
-        <label for="password" style="margin-left: -46px;">Password:</label>
-        <input type="password" id="password" value="********" disabled>
-    </div>
-    <div>
-        <label for="plant" style="margin-left: -95px;">Monitoring Plant:</label>
-        <input type="text" name="plant" id="plant" value="{{user[6]}}" required>
-    </div>
-    <div>
-        <label for="thing_values" style="margin-left: -160px;">No of Readings in Graphs:</label>
-        <input type="number" name="reading" id="thing_values" value="{{user[7]}}" required>
-    </div>
-    <div>
-        <input type="reset" value="Reset">
-        <input type="submit" value="Save Changes">
-    </div>
-</form>
-<br>
-<div class="error" style="color: red;text-align: center;">{{ error }}</div>
-<br><br>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% import "_icons.html" as ui %}
+
+{# Banner for the two states where readings are not current. #}
+{% macro feed_banner(feed) -%}
+{% if not feed.online %}
+<div class="banner">
+  {{ ui.icon('wifi-off') }}
+  <span>Sensor feed unreachable. Showing the last values PlantIQ received.</span>
+</div>
+{% elif feed.stale and feed.age %}
+<div class="banner">
+  {{ ui.icon('clock') }}
+  <span>
+    The device has not reported since <strong>{{ feed.age }}</strong>.
+    These are the most recent readings on the channel, not live ones.
+  </span>
+</div>
+{% endif %}
+{%- endmacro %}
+
+{# One sensor tile. #}
+{% macro metric_tile(metric, latest) -%}
+{% set value = latest.get(metric.key) if latest else None %}
+<div class="metric" data-accent="{{ metric.accent }}"
+     data-metric-key="{{ metric.key }}" data-metric-max="{{ metric.max }}">
+  <div class="top">
+    <span class="chip">{{ ui.metric_icon(metric.key) }}</span>
+    <span class="name">{{ metric.label }}</span>
+  </div>
+  <div class="value">
+    <span data-metric-value>{{ '%g'|format(value) if value is not none else '--' }}</span><span
+      class="unit">{{ metric.unit }}</span>
+  </div>
+  <div class="track">
+    <div class="fill" data-metric-fill
+         style="width: {{ ((value / metric.max * 100) | round(1)) if value is not none else 0 }}%"></div>
+  </div>
+  <div class="foot">Range 0 - {{ metric.max }} {{ metric.unit }}</div>
+</div>
+{%- endmacro %}
+
+{# Status pill for an evaluated threshold row. #}
+{% macro status_pill(status) -%}
+{% if status == 'ok' %}
+<span class="pill pill-ok">{{ ui.icon('check', 12) }} Healthy</span>
+{% elif status == 'alert' %}
+<span class="pill pill-alert">{{ ui.icon('alert', 12) }} Out of range</span>
+{% else %}
+<span class="pill pill-unknown">No data</span>
+{% endif %}
+{%- endmacro %}
+
+{# Empty-state block. #}
+{% macro empty_state(glyph, title, body) -%}
+<div class="empty">
+  <div class="glyph">{{ ui.icon(glyph, 22) }}</div>
+  <h3>{{ title }}</h3>
+  <p>{{ body }}</p>
+</div>
+{%- endmacro %}

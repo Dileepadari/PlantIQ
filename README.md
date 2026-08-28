@@ -1,139 +1,104 @@
-# Smart_farming
+<p align="center">
+  <img src="src/static/images/logo-mark.png" alt="" width="96" />
+</p>
 
-## Problem Statement:
+# PlantIQ
 
- <p style = "color :#16DE2A;">Propose an IOT system to sense VOCs for accurately predicting onset of pathogen attack on the plant. A network on VOC sensor, temperature, humidity (soil), light, O2/CO2 can be deployed on the farm. In the project, these above mentioned sensor will be interfaced and deployed on an experimental farm (plants). Response to any stress introduced will be recorded via change in temperature, humidity & VOC levels of the plants.</p>
-	
-## Motivation
-<p style>Our IoT system addresses the critical challenge of timely pathogen detection in crops, aiming to revolutionize agriculture. Traditional methods often fail to provide early indicators, leading to significant economic losses. By integrating VOC sensors with temperature, humidity, light, and gas sensors, we offer a holistic approach for comprehensive plant health monitoring. The deployment on an experimental farm enables real-time data collection, refining our understanding of environmental parameters and stress responses. This innovative solution empowers farmers with timely information, enhancing crop resilience, reducing losses, and contributing to the sustainability of global food production.</p>
+A plant health monitor for an experimental farm. Six sensors on an ESP32 watch a
+plant's air, soil and light; PlantIQ reads them back, compares every value
+against the safe range for that plant species, and raises an alert when one
+drifts out.
 
-## Sensors 
-`DHT(11)` :   
-Temperature & Humidity (Range: Temp -> 0 - 50 C ; Humidity -> 20% to 90%)
+The point is early warning. A plant under pathogen attack changes the volatile
+organic compounds it releases into the air before it looks unwell, so a VOC
+sensor read alongside temperature, humidity, soil moisture, light and CO2
+catches trouble while there is still time to act.
 
-Working Principle :   
-- The DHT11 is a temperature and humidity sensor that operates by measuring changes in resistance of a humidity-sensitive element(polymer) and built in thermistor in response to temperature and humidity variations. It converts these changes into digital signals for microcontrollers to read.​
-- Humidity-Sensitive Resistor (Polymer): The resistance of a humidity-sensitive resistor, often made of polymers, decreases with increasing humidity. As humidity increases, the polymer absorbs moisture, causing its conductivity to increase and, consequently, lowering its resistance.
-- Thermistor (Temperature-Sensitive Resistor): The resistance of a thermistor decreases with increasing temperature. Thermistors are designed to have a negative temperature coefficient (NTC), meaning their resistance decreases as the temperature rises. This characteristic makes them suitable for temperature sensing applications.
+Building or changing the code? See [DEVDOC.md](./DEVDOC.md).
 
-`Soil Moisture`: 
+---
 
-Working Principle : 
-- The Soil Moisture sensor uses capacitance to measure dielectric permittivity of the surrounding medium to measure the soil moisture.
-- In soil the dielectric permittivity is function of water content.When water content increases the dielectric permittivity also increase.So when dielectric permittivity is high then the Voltage measured across the `Soil Moisture` pins decreases.
+## What it measures
 
-`SGP30` :    
-CO<sub>2</sub> and VOC  
+| Sensor | Reads | How it works |
+|---|---|---|
+| DHT11 | Temperature, humidity | A humidity-sensitive polymer and a thermistor, both read as resistance changes |
+| Capacitive probe | Soil moisture | Dielectric permittivity of soil rises with water content |
+| SGP30 | CO2, VOC | A metal-oxide film changes conductivity in the presence of the target gases |
+| LDR | Light intensity | Photoconductivity: resistance falls as incident light rises |
 
-Working Principle : 
-- SGP30 uses Metal-oxide semiconductor to detect various gases.The sensor has MOX(Metal Oxide) and ASIC(Application Specific Integrated Circuit).
-- `SGP30` mainly measures the concentrations of CO<sub>2</sub> and TVOCs.The MOX sensor reacts to the presence of these gases ,causing changes in it's electric conductivity.
-- The ASIC then converts these changes into digital signals , which are used to calculate the gas concentrations.
+## Getting in
 
-`LDR Sensor`:   
+Register with an email, a password and the plant you are growing, or sign in
+with the demo account shown on the login page to look around without creating
+anything.
 
-- The LDR sensor operates on the principle of photoconductivity. When exposed to light, its photoconductive material absorbs energy, causing electrons to move from the valence band to the conduction band. This transition increases conductivity and decreases resistivity, resulting in a measurable decrease in resistance within the range of 0 to 1000 ohms.
-- For clarity, we convert the sensor's resistance output to a light intensity value using the formula:
-            Light Intensity = 10(1000 - Sensor Output)
-            
-- This formula produces a light intensity reading between 0 and 100. A light intensity of 0 indicates darkness, while 100 signifies maximum light intensity. This conversion allows for a precise interpretation of the sensor's output in relation to the prevailing light conditions.
+Your account carries two settings that shape what you see: the **plant** being
+monitored, which decides the safe ranges every reading is judged against, and
+the **number of readings** to chart, which sets how far back the graphs go.
 
-## Implementation
-The implementation of the project had various phases including sensor integration, data collection and web design and statistical analysis.
+## The pages
 
-- The sensors are integrated to a Mango plant using a breadboard and were connected to the ESP32  
-- The ESP32 (microcontroller) was connected to the Thingspeak as well as to OM2M for send data to store and retrieve for the usage  
-- ESP32 is using the MQTT protocol to connect and transfer the data to the thingspeak and HTTP protocol is used to send data to OM2M and to send alerts to the website.
-- Threasholds are declared for some plants and stored in the database to monitor the following plants according to their threashold values.
-- Alert Mechanism is implemented by the ESP32 sending the alerts to the database of the website. The recent alert is verified before adding the same alert inorder to reduce the load to teh website.
-- The data is monitored from the thingspeak and OM2M sent from the sensors and was displayed in the dashboard.
-- Finally the project implements the required functionalities like statistical analysis, circuits and history, settings etc
+### Dashboard
+Every sensor's current value as a tile, with a bar showing where the reading
+sits in its range, and the VOC trend below. A threshold table shows each sensor
+against the safe range for your plant, and the newest alerts sit beside it.
 
+Tiles refresh on their own every 30 seconds. If the device has not reported
+recently the page says so plainly and labels the readings as the most recent on
+the channel rather than live ones - a monitoring page that quietly shows stale
+numbers is worse than one that shows none.
 
-## How To Use ?
-- The setup of the circuit should be as following:
-<div style="display: flex;justify-content: space-around;">
-<img src="project_photos/circ.jpeg" width="40%"  height="300px" alt="circuit 1">
-<img src="project_photos/circuit.jpeg" width="50%" height="300px" style="object-fit:scale-down;" alt="circuit 2">
-</div>    
-<br>
+### Statistics
+One chart per sensor over your chosen window. Hover any chart to read the exact
+value and time at that point.
 
-- The ESP32 is connected to the sensors and the sensors are connected to the power supply and the ESP32 is connected to the laptop using the USB cable.
-- The code should be adjusted as follows:  
-  - change the CSE_IP to the ip of laptop  
-  - change the wifi details (ssid and password) 
-  - change the thingspeak channel id, api key and other mqtt details.
+### Analysis
+Each of the six readings against the safe range stored for your plant, marked
+**Healthy** or **Out of range**, with a count of each at the top. If your plant
+has no threshold profile in the database, the page says which plants do.
 
-### OM2M
-The OM2M is provided as folder such that the setup should be run from the eclipse-om2m-v1-4-1/in-cse/start.sh  
-[OM2M link](https://github.com/Dileepadari/OM2M.git)
+### History
+Pick a start and end date and load every reading the device recorded in
+between. The table scrolls, missing sensor readings show as `--` rather than
+zero, and the whole range exports as CSV.
 
-### Website Usage:
-To use the website, the user should register an account giving the required info, or can use by default provided login details in the login page to test the web
+If the range you picked is empty, PlantIQ tells you the date of the most recent
+reading on the channel and offers to jump to it.
 
-The user can change the preference of their plant monitoring. He can edit the number of readings that should be plotted for the statistics plots for every sensor.
+### Alerts
+Threshold breaches the firmware reported, newest first, colour-coded by
+severity. Dismiss them one at a time or clear the lot. The sidebar carries a
+count of what is still open.
 
-The website is responsive and user friendly such that it can be explored at [greenplant](http://greenplant.pythonanywhere.com/) website.
+### Circuit
+What each sensor is, how it connects to the ESP32, and the system diagram
+showing the path from breadboard to dashboard.
 
-## Web Pages
-- Home Page : Consists of the current values of sensors and Plot of VOC values​  
+### Settings
+Change your display name, the plant being monitored and how many readings the
+charts cover. The plant field suggests the species that actually have threshold
+profiles, and refuses one that does not.
 
-![Graph image](project_photos/home.jpeg)   
-    
+### About
+What the project is, what each page does, and who built it.
 
-- Statistics Page : Consists of Graphs/Plots of sensor data retrieved from Thingspeak.​  
+## Theme
 
-![Graph image](project_photos/stat.jpeg)    
-     
+Light and dark both ship. The toggle sits in the top bar and your choice is
+remembered on that browser; with no choice made, PlantIQ follows the operating
+system setting.
 
-- Analysis Page : Consists threshold values of each sensor for the Plant selected by the user and the current values of each sensor and health of the plant at that point of time. ​   
-     
-![Graph image](project_photos/analysis.jpeg)    
-       
-     
-- Circuit Page : Consists of the entire circuit diagram of the system.​     
-       
-![Graph image](project_photos/circuit_p.jpeg)     
-       
-      
-- History Page : Here the user can select Dates in which they want to see the sensor data recorded between the timeline.     ​
-      
-![Graph image](project_photos/history.jpeg)     
-      
-      
-- Alerts Page : When the current values of the sensors are not in the range of threshold values an alert is generated and is shown in Alerts Page.     
-    
-     
-![Graph image](project_photos/alerts.jpeg)     
-     
+## Alerts from the device
 
-- About Page : Consists of the information of the project and team members.​   
-    
-![Graph image](project_photos/about.jpeg)    
-     
-
-- Settings Page : Here the user can make certain changes:​   
-    - The user can choose the number of values for observation in the Statistics Page.​
-    - The user can change Plant and if the Plant is present in the Database then the corresponding Threshold values are shown in the Analysis Page otherwise it prompts that there is no such plant.   
-
-![Graph image](project_photos/settings.jpeg)  
-     
-
-## Analysis
-- Graphs for shown in the Statistics page of the website of each sensor.The data obtained is Analysed and compared with the Threshold value of the selected plant.The Status shown in Analysis page is based on the values of Threshold values and Current values.     
-
-## Important links (Appendix)
-The ppts are referenced in the ppt folder and below are some important links.
-- [Website link](http://greenplant.pythonanywhere.com/)   
-- [github](https://github.com/Dileepadari/Smart_farming.git)
-- [file_to_start_OM2M](https://github.com/Dileepadari/OM2M/blob/main/eclipse-om2m-v1-4-1/in-cse/start.sh)    
-- [Arduino_code](https://github.com/Dileepadari/Smart_farming/blob/main/Arduino/ESW_Project.ino)                                                                                            
+The ESP32 does the threshold comparison itself and posts an alert when a value
+crosses. PlantIQ stores it, skips it if the same alert is already open, and
+shows it on the Alerts page and in the sidebar count.
 
 ## Credits
-Dileepkumar Adari    
-Revanth Reddy    
-Karthikeya Chaganti    
-Gajawada Bharath    
 
-@ Copyright Aakashavani
+Built by Adari Dileep Kumar, Gajawada Bharath, Chaganti Venkata Karthikeya and
+Sallepalle Naga Revanth Reddy at IIIT Hyderabad, under Aakashavani.
 
+Presentation decks are in [`ppts/`](./ppts). The OM2M middlenode used for the
+IoT layer is vendored as a submodule in `OM2M_ESW/`.

@@ -1,14 +1,57 @@
-<div class="breadcrumb-wrapper row" style="padding: 80px 20px 0 20px;">
-    <div class="col-12 col-lg-3 col-md-6">
-        <h4 class="page-title">Circuit</h4>
-    </div>
-    <div class="col-12 col-lg-9 col-md-6">
-        <ol class="breadcrumb float-right">
-            <li><a href="/home">Home</a></li>
-            <li class="active">/ Circuit</li>
-        </ol>
-    </div> 
-    <div class="citcuit-fig" style="margin: auto;">
-        <img src="../static/images/circuit.png" alt="circuit" style="object-fit: cover;width: 100%;">
-    </div>
+{% extends "layout.html" %}
+{% import "_icons.html" as ui %}
+{% set page_title = 'Circuit' %}
+{% block title %}Circuit | PlantIQ{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Circuit</h1>
+    <p class="lede">How the sensors are wired to the ESP32.</p>
+  </div>
 </div>
+
+<div class="grid grid-2" style="margin-bottom:14px">
+  <div class="card">
+    <div class="card-head"><h2>Sensors on the board</h2></div>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Sensor</th><th>Measures</th><th>Interface</th></tr></thead>
+        <tbody>
+          <tr><td class="label-cell">DHT11</td><td>Temperature, humidity</td><td>1-wire digital</td></tr>
+          <tr><td class="label-cell">Capacitive soil probe</td><td>Soil moisture</td><td>Analog</td></tr>
+          <tr><td class="label-cell">SGP30</td><td>CO2, VOC</td><td>I2C</td></tr>
+          <tr><td class="label-cell">LDR</td><td>Light intensity</td><td>Analog</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><h2>Data path</h2></div>
+    <div class="card-body prose">
+      <p>
+        The ESP32 samples all four sensors on a fixed interval. Readings go to
+        ThingSpeak over MQTT, which is what every chart on this site reads back.
+        The same readings are pushed to an OM2M middlenode over HTTP.
+      </p>
+      <p>
+        When a value crosses the threshold stored for the selected plant, the
+        firmware POSTs an alert to <code class="mono">/api/alerts</code> on this
+        server, which is what fills the Alerts page.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <h2>System diagram</h2>
+    <span class="sub">breadboard, ThingSpeak channel and this dashboard</span>
+  </div>
+  <div class="card-body">
+    <img src="{{ url_for('static', filename='images/circuit.png') }}"
+         alt="System diagram: the ESP32 breadboard with the DHT11, SGP30, soil probe and LDR, feeding a ThingSpeak channel and the PlantIQ dashboard"
+         style="border-radius:var(--radius-sm);border:1px solid var(--border)" />
+  </div>
+</div>
+{% endblock %}

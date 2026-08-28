@@ -1,69 +1,59 @@
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <title> greenplant | Register </title>
-    <link rel="stylesheet" href="../static/styles/register.css">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   </head>
-   
-   
+{% extends "_auth_layout.html" %}
+{% import "_icons.html" as ui %}
+{% set art_image = 'images/IOTfarm.jpg' %}
+{% block title %}Create an account | PlantIQ{% endblock %}
+{% block art_heading %}Start monitoring in a couple of minutes.{% endblock %}
+{% block art_body %}
+Pick the plant you are growing and PlantIQ compares every reading against the
+safe range for that species.
+{% endblock %}
 
-<body>
-  <div class="big">
-  <div class="container">
-    
-    <div class="cover">
-      <div class="front">
-        <img src="../static/images/IOTfarm.jpg" alt="">
-        <div class="text">
-          <span class="text-1">A plant always<br> makes your life better</span>
-          <span class="text-2">Let's start farming with IOT Support</span>
-        </div>
-      </div>
-      
+{% block form %}
+<div class="head">
+  <h1>Create an account</h1>
+  <p>All you need is an email and the plant you want to watch.</p>
+</div>
+
+{% if error %}
+<div class="flash" data-type="error">{{ ui.icon('alert') }}<span>{{ error }}</span></div>
+{% endif %}
+
+<form method="post" action="{{ url_for('auth.signup') }}">
+  <div class="field">
+    <label for="name">Full name</label>
+    <input type="text" id="name" name="name" value="{{ form.get('name', '') }}"
+           autocomplete="name" required autofocus />
+  </div>
+  <div class="field">
+    <label for="username">Username</label>
+    <input type="text" id="username" name="username" value="{{ form.get('username', '') }}"
+           autocomplete="username" required />
+  </div>
+  <div class="field">
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" value="{{ form.get('email', '') }}"
+           autocomplete="email" required />
+  </div>
+  <div class="field">
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password"
+           autocomplete="new-password" minlength="6" required />
+    <p class="hint">At least 6 characters.</p>
+  </div>
+  <div class="form-row">
+    <div class="field">
+      <label for="plant">Plant</label>
+      <input type="text" id="plant" name="plant" value="{{ form.get('plant', '') }}"
+             placeholder="Mango" required />
     </div>
-    <div class="forms">
-        <div class="form-content">
-          <div class="login-form">
-            <div class="title">Register</div>
-          <form method="POST" action="/signup">
-            <div class="input-boxes">
-               <div class="input-box">
-                <input type="text"  name="username" placeholder="Enter your username" required>
-              </div>
-              <div class="input-box">
-                <input type="text"  name="name" placeholder="Enter your Full name" required>
-              </div>
-              <div class="input-box">
-    
-                <input type="text" name="email" placeholder="Enter your email" required>
-              </div>
-          <div class="input-box"> 
-                
-                <input type="password" name="password" placeholder="Enter your Password" required>
-              </div>
-              
-              <div class="input-box">
-    
-                <input type="text" name="plant" placeholder="Enter your Plant Preference" required>
-              </div>
-              <div class="input-box">
-    
-                <input type="text" name="init_read" placeholder="Enter your initial choice of no of plots" required>
-              </div>
-              <div class="button input-box">
-                <input type="submit" value="Submit">
-              </div>
-              {% if error %}
-                 <h3 style="color:red;text-align: center;">User already Exists</h3>
-                {% endif %}
-              <br>
-              <div class="text sign-up-text">Don't have an account? <a href="/login" style="color:red;">Login now</a></div>
-            </div>
-        </form>
-     
-      </div>
-           </div>
+    <div class="field">
+      <label for="init_read">Chart readings</label>
+      <input type="number" id="init_read" name="init_read" min="5" max="200"
+             value="{{ form.get('init_read', '20') }}" required />
+    </div>
   </div>
-  </div>
-</body>
+  <button class="btn btn-primary" type="submit">Create account</button>
+</form>
+
+<p class="auth-alt">Already have an account? <a href="{{ url_for('auth.login') }}">Sign in</a></p>
+{% endblock %}
