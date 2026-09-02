@@ -9,6 +9,7 @@
 #include <ArduinoJson.h>
 #include <time.h>
 #include "SparkFun_SGP30_Arduino_Library.h"
+#include "secrets.h"  // untracked, copy from secrets.example.h
 
 #define CSE_IP "192.168.245.105"
 #define CSE_PORT 5089
@@ -25,11 +26,11 @@ const char *ntpServer = "pool.ntp.org";
 const char *server = "mqtt3.thingspeak.com";
 const int port = 1883;
 
-const char *mqttUserName = "Jzw9Hg8SASECLzQ3GSUmPAc";
-const char ClientID[] = "Jzw9Hg8SASECLzQ3GSUmPAc";
-const char *mqttPass = "NjfZwpnqeOsa+aBvhe7dBZyq";
-long int channelID = 2281910;
-const char *apiKey = "GML8ND13LVFXZ7E2"; // write apikey
+const char *mqttUserName = SECRET_TS_MQTT_USER;
+const char ClientID[] = SECRET_TS_MQTT_CLIENT_ID;
+const char *mqttPass = SECRET_TS_MQTT_PASS;
+long int channelID = SECRET_TS_CHANNEL_ID;
+const char *apiKey = SECRET_TS_WRITE_KEY;
 
 HTTPClient http;
 
@@ -80,7 +81,7 @@ void loop(void)
         delay(1000);
     }
     StaticJsonDocument<200> jsonDoc;
-    jsonDoc["secret"] = "secretanicheppaga";
+    jsonDoc["secret"] = SECRET_DEVICE_TOKEN;
     jsonDoc["plant_name"] = "Mango";
     //  jsonDoc["msg"] = "this is a sample msg";
     //  jsonDoc["notif_type"] = "danger";

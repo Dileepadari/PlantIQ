@@ -35,3 +35,7 @@ Thumbs.db
 # Local instance state. Database.db is committed on purpose: it carries the
 # plant threshold profiles the app is useless without.
 instance/
+
+# Firmware credentials, copy from Arduino/secrets.example.h
+Arduino/secrets.h
+secrets.h

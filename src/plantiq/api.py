@@ -4,6 +4,8 @@ Two audiences: the browser (same-session reads that keep the dashboard live)
 and the ESP32 firmware (alert ingest, authenticated with a shared token).
 """
 
+import hmac
+
 from flask import Blueprint, current_app, jsonify, request
 
 from . import notifications, plants, sensors
@@ -82,7 +84,9 @@ def ingest_alert():
     payload = request.get_json(silent=True) or {}
     token = payload.get("secret") or request.headers.get("X-Device-Token")
 
-    if token != current_app.config["DEVICE_TOKEN"]:
+    expected = current_app.config["DEVICE_TOKEN"]
+    # An unset token must reject everything, not accept an empty one.
+    if not expected or not token or not hmac.compare_digest(str(token), expected):
         return jsonify({"status": "error", "message": "invalid device token"}), 401
 
     message = (payload.get("msg") or "").strip()

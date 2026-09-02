@@ -28,14 +28,14 @@ class Config:
 
     # ThingSpeak channel that the ESP32 publishes to.
     THINGSPEAK_CHANNEL = os.environ.get("PLANTIQ_TS_CHANNEL", "2281910")
-    THINGSPEAK_READ_KEY = os.environ.get("PLANTIQ_TS_READ_KEY", "1M6NTVUZOV87FRI0")
+    THINGSPEAK_READ_KEY = os.environ.get("PLANTIQ_TS_READ_KEY", "")
     THINGSPEAK_TIMEZONE = os.environ.get("PLANTIQ_TS_TIMEZONE", "Asia/Kolkata")
     THINGSPEAK_TIMEOUT = _env_int("PLANTIQ_TS_TIMEOUT", 6)
     # Seconds a fetched feed is reused before hitting the API again.
     THINGSPEAK_CACHE_TTL = _env_int("PLANTIQ_TS_CACHE_TTL", 20)
 
     # Shared secret the firmware presents when POSTing an alert to /api/alerts.
-    DEVICE_TOKEN = os.environ.get("PLANTIQ_DEVICE_TOKEN", "secretanicheppaga")
+    DEVICE_TOKEN = os.environ.get("PLANTIQ_DEVICE_TOKEN", "")
 
     # Bounds accepted for the "readings in charts" preference.
     MIN_READINGS = 5
