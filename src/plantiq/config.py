@@ -27,6 +27,11 @@ class Config:
     DATABASE = os.environ.get("PLANTIQ_DATABASE", str(BASE_DIR / "Database.db"))
 
     # ThingSpeak channel that the ESP32 publishes to.
+    #
+    # The base URL is configurable so the app can be pointed at a stand-in that
+    # speaks the same JSON. That is how the README screenshots are taken: with a
+    # local feed, rather than by borrowing a real channel's readings.
+    THINGSPEAK_BASE_URL = os.environ.get("PLANTIQ_TS_BASE_URL", "https://api.thingspeak.com")
     THINGSPEAK_CHANNEL = os.environ.get("PLANTIQ_TS_CHANNEL", "2281910")
     THINGSPEAK_READ_KEY = os.environ.get("PLANTIQ_TS_READ_KEY", "")
     THINGSPEAK_TIMEZONE = os.environ.get("PLANTIQ_TS_TIMEZONE", "Asia/Kolkata")

@@ -32,9 +32,17 @@ Thumbs.db
 *.env
 !.env.example
 
-# Local instance state. Database.db is committed on purpose: it carries the
-# plant threshold profiles the app is useless without.
+# Local instance state.
+#
+# Database.db used to be committed, with a comment here explaining that it
+# carried the plant profiles and had to stay. It also carried the users table:
+# six real names, email addresses and clear-text passwords, published for two
+# years. The profiles now live in src/plantiq/data/plants.json, and no database
+# file belongs in this repository.
 instance/
+*.db
+*.sqlite
+*.sqlite3
 
 # Firmware credentials, copy from Arduino/secrets.example.h
 Arduino/secrets.h

@@ -19,8 +19,10 @@
 #define OM2M_DATA_CONT "Sensors/Data"
 
 int some_var = 0;
-const char *ssid = "GALAXY KING";
-const char *password = "DILEEPPRASANTHi";
+// The previous pass moved the ThingSpeak keys into secrets.h and left these two
+// behind, so a real home network's name and password stayed in the file.
+const char *ssid = SECRET_WIFI_SSID;
+const char *password = SECRET_WIFI_PASS;
 
 const char *ntpServer = "pool.ntp.org";
 const char *server = "mqtt3.thingspeak.com";

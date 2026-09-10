@@ -12,6 +12,7 @@ view, see [README.md](./README.md).
 - [Application factory](#application-factory)
 - [Auth model](#auth-model)
 - [Data model](#data-model)
+- [Reference data and seeding](#reference-data-and-seeding)
 - [Sensor feed](#sensor-feed)
 - [Threshold evaluation](#threshold-evaluation)
 - [API surface](#api-surface)
@@ -22,7 +23,11 @@ view, see [README.md](./README.md).
 - [Local development](#local-development)
 - [Deployment](#deployment)
 - [Firmware](#firmware)
+- [Tests](#tests)
+- [Continuous integration](#continuous-integration)
+- [Documentation and screenshots](#documentation-and-screenshots)
 - [Gotchas](#gotchas)
+- [Contributors](#contributors)
 
 ## Tech stack
 
@@ -119,7 +124,10 @@ Three tables, created by `db.SCHEMA` if missing.
 
 **`plants`** - `plant_id`, `plant_name`, and a `_min`/`_max` pair per metric:
 `VOC`, `temp`, `humid`, `moist`, `CO2`, `light_intense`. This is the reference
-data the app is useless without, which is why `Database.db` is committed.
+data the app is useless without, and it ships as
+[`src/plantiq/data/plants.json`](./src/plantiq/data/plants.json). See
+[Reference data and seeding](#reference-data-and-seeding); **no database file is
+in this repository, and none may be added.**
 
 **`notifications`** - `notification_id`, `plant_name`, `msg`, `notif_type`
 (`success` / `info` / `warning` / `danger`), `date_time` (`%d-%m-%Y %H:%M`),
@@ -128,6 +136,31 @@ data the app is useless without, which is why `Database.db` is committed.
 Every query is parameterised. There are no f-string or `.format()` SQL strings
 anywhere in the package; the previous version built queries by concatenation and
 was injectable through the login form and the settings form.
+
+## Reference data and seeding
+
+`src/plantiq/data/plants.json` holds the six shipped species and their
+thresholds. `db.seed_plants()` inserts any of them the database does not already
+have, and `db.init_db()` calls it on every application start, so:
+
+- a fresh checkout with no database file becomes a working install with no
+  separate seeding step;
+- adding a species to the JSON gets it into every existing install on the next
+  restart;
+- a threshold somebody tuned for their own greenhouse is **never** overwritten,
+  because the match is on `plant_name` and existing rows are skipped.
+
+### Why the JSON exists at all
+
+`src/Database.db` used to be tracked, and `.gitignore` carried a comment
+explaining that it had to be, because it held the plant profiles. It also held
+the `users` table: six real people's names, email addresses and **clear-text
+passwords**, published from October 2023 until September 2026.
+
+The profiles were the only part of that file worth keeping, and they are 90 lines
+of JSON that a diff can actually review. The rest should never have been in a
+repository at all. `not_for_you.md` has the full account, and CI now fails if any
+`.db` reappears.
 
 ## Sensor feed
 
@@ -256,20 +289,25 @@ secrets, which must be set before deploying anywhere public.
 | Variable | Default | Purpose |
 |---|---|---|
 | `PLANTIQ_SECRET_KEY` | `dev-only-change-me` | Signs the session cookie |
-| `PLANTIQ_DEVICE_TOKEN` | the original hardcoded string | Shared secret for alert ingest |
-| `PLANTIQ_DATABASE` | `src/Database.db` | Absolute path to the SQLite file |
+| `PLANTIQ_DEVICE_TOKEN` | empty | Shared secret for alert ingest. **Empty rejects every alert**, which is the correct closed default |
+| `PLANTIQ_DATABASE` | `src/Database.db` | Absolute path to the SQLite file. Created on first start; never committed |
+| `PLANTIQ_TS_BASE_URL` | `https://api.thingspeak.com` | Feed host. Override to point at a stand-in that speaks the same JSON |
 | `PLANTIQ_TS_CHANNEL` | `2281910` | ThingSpeak channel id |
-| `PLANTIQ_TS_READ_KEY` | the project's key | ThingSpeak read API key |
+| `PLANTIQ_TS_READ_KEY` | empty | ThingSpeak read API key. The default channel is public and readable without one |
 | `PLANTIQ_TS_TIMEZONE` | `Asia/Kolkata` | Timezone for returned timestamps |
 | `PLANTIQ_TS_TIMEOUT` | `6` | HTTP timeout in seconds |
 | `PLANTIQ_TS_CACHE_TTL` | `20` | Seconds a fetched feed is reused |
 | `PLANTIQ_HOST` / `PLANTIQ_PORT` | `127.0.0.1` / `5000` | Dev server bind |
 | `PLANTIQ_DEBUG` | `1` | Dev server reloader and traceback page |
 
-The defaults reproduce the original deployment. They are checked in because this
-is a coursework repo whose ThingSpeak channel is public and whose device token
-is readable in the committed firmware; treat both as already disclosed and set
-your own if you redeploy.
+No secret has a real default any more. The device token and the read key were
+both inlined once and are on the rotation list as disclosed; the code now reads
+them from the environment and an unset device token closes the ingest endpoint
+rather than opening it.
+
+`PLANTIQ_TS_BASE_URL` exists so the app can be run against a local feed. That is
+how the README screenshots are taken, and it means the dashboard can be
+demonstrated without borrowing a real channel's readings.
 
 ## Local development
 
@@ -279,8 +317,15 @@ python3 -m venv .venv
 .venv/bin/python src/wsgi.py
 ```
 
-Then open http://127.0.0.1:5000. The schema is created on first run; the
-committed `Database.db` already has the plant profiles and a demo account.
+Then open http://127.0.0.1:5000. The first run creates the schema and loads the
+plant profiles. **No account exists**: register one through the signup form.
+
+To see the dashboard with a live-looking feed and no hardware, point it at a
+stand-in that serves the same JSON shape:
+
+```bash
+PLANTIQ_TS_BASE_URL=http://127.0.0.1:8731 .venv/bin/python src/wsgi.py
+```
 
 To reset a password or add a plant profile, use the module directly:
 
@@ -318,6 +363,60 @@ your deployment; `/receive` and `/api/alerts` both work.
 OM2M is a submodule - `git submodule update --init` then run
 `OM2M_ESW/eclipse-om2m-v1-4-1/in-cse/start.sh`.
 
+## Tests
+
+`pytest -q`, 55 tests, about three seconds, **no network**.
+
+`tests/conftest.py` has an autouse fixture that replaces `requests.get` with a
+raise. Without it the dashboard fixtures really do call the public ThingSpeak
+channel: the suite was nine seconds of live HTTP and would have been red on a
+runner with no egress. Tests that want a feed stub the call themselves.
+
+Every test builds its own database in a `tmp_path` through the app's own
+`init_db()`. Nothing is loaded from a fixture file, which means the suite also
+proves the claim in [Reference data and seeding](#reference-data-and-seeding):
+that a checkout with no database becomes a working install.
+
+| File | Covers |
+|---|---|
+| `test_seed.py` | A fresh database has the profiles, has no users, and re-seeding adds nothing |
+| `test_auth.py` | Signup hashes, a clear-text row is re-hashed on first successful login, a wrong password re-hashes nothing, `next=` cannot leave the site |
+| `test_api.py` | The device token: missing, wrong, unconfigured, header form, duplicate suppression, the legacy `/receive` path |
+| `test_plants.py` | Threshold evaluation, including that a missing reading and an unusable threshold are `unknown` rather than `ok` |
+| `test_sensors.py` | `"NaN"` and `Infinity` parse to `None`, field mapping, date labelling, and that a failed fetch returns an offline feed rather than raising |
+| `test_views.py` | Every signed-in page renders with no telemetry at all |
+
+The two assertions worth keeping if everything else is deleted are
+`test_a_legacy_cleartext_row_is_rehashed_on_first_successful_login` and
+`test_alert_ingest_rejects_everything_when_no_token_is_configured`. Both guard a
+mistake this repository has already made once.
+
+## Continuous integration
+
+`.github/workflows/ci.yml`, three jobs:
+
+- **Lint and test** on Python 3.10 and 3.12: `ruff check src tests` then `pytest`.
+- **No database file is tracked.** Fails if any `.db`, `.sqlite` or `.sqlite3`
+  shows up in `git ls-files`, and separately if a credential literal appears
+  assigned to `ssid`, `password`, `apiKey`, `mqttPass`, `mqttUserName` or
+  `ClientID` in the sketch. `.gitignore` does not protect against `git add -f`,
+  and both of these have happened.
+- **The light README matches its source.**
+
+## Documentation and screenshots
+
+`README.md` is the dark page, `README-light.md` its generated twin, built by
+`scripts/build-light-readme.mjs` and checked by CI.
+
+`docs/screenshots/{dark,light}` hold seven pages each, same filename in both
+themes; `docs/screenshots/responsive/{dark,light}` hold three widths each.
+
+They are viewport renders of a real instance, signed in through the app's own
+signup form, with the feed served by a local stand-in via `PLANTIQ_TS_BASE_URL`.
+Nothing points at the real ThingSpeak channel, and no real person's data appears
+in any of them: the account in the screenshots was registered during the capture
+run and the alerts were posted through `/api/alerts` with a throwaway token.
+
 ## Gotchas
 
 - **ThingSpeak sends the string `"NaN"`** when a sensor did not report. `float()`
@@ -328,8 +427,13 @@ OM2M is a submodule - `git submodule update --init` then run
   constructed midnight shifts the displayed day for anyone not on UTC. The
   History page formats a local `YYYY-MM-DD` string and assigns `.value` instead.
 - **The channel's data ends 2023-11-21.** The hardware is not running, so the
-  dashboard is permanently in its stale state. That is the honest rendering, not
-  a bug; point `PLANTIQ_TS_CHANNEL` at a live channel to see the other path.
+  dashboard against the default channel is permanently in its stale state. That
+  is the honest rendering, not a bug. Point `PLANTIQ_TS_CHANNEL` at a live
+  channel, or `PLANTIQ_TS_BASE_URL` at a local stand-in, to see the other path.
+- **The default ThingSpeak channel is world-readable.** `PLANTIQ_TS_READ_KEY` is
+  not required for it, which is why a test that expected an offline feed with no
+  key configured passed against the real API instead. Anything asserting the
+  offline path has to stub the HTTP call.
 - **`reading_no` is clamped on read as well as write.** An old row can hold a
   value outside the current bounds, and an unclamped one goes straight into a
   ThingSpeak `results` parameter.
@@ -338,3 +442,16 @@ OM2M is a submodule - `git submodule update --init` then run
   must match that string, not the metric key.
 - **Alert dismissal is a POST**, not the old `GET /change_seen/<id>` link, so a
   crawler or a prefetch cannot clear someone's alerts.
+
+---
+
+## Contributors
+
+| | |
+|---|---|
+| [Adari Dileep Kumar](https://github.com/Dileepadari) | Web application, API, firmware integration |
+| [Gajawada Bharath](https://github.com/bharath-gajawada) | Sensors and circuit |
+| [Chaganti Venkata Karthikeya](https://github.com/kryptonblade) | OM2M layer |
+| [Sallepalle Naga Revanth Reddy](https://github.com/nagarevanth) | Firmware and data pipeline |
+
+Built at IIIT Hyderabad under Aakashavani.

@@ -1,3 +1,6 @@
+{# Readings between two dates, loaded on demand from /api/history and
+   exportable as CSV. Dates are formatted locally, never through
+   valueAsDate, which reads and writes UTC. #}
 {% extends "layout.html" %}
 {% import "_icons.html" as ui %}
 {% import "_partials.html" as parts %}

@@ -1,0 +1,18 @@
+[tool.ruff]
+# 120 rather than 100 so the METRICS table in sensors.py can stay column
+# aligned. It is a metadata table and reads far better as one.
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "C4"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests import from conftest by name and reach for private parsers on purpose.
+"tests/*" = ["E402"]
+
+[tool.pytest.ini_options]
+# pytest is a console script, so the working directory is not on sys.path.
+# Without this, `from plantiq import ...` fails in CI while passing locally.
+pythonpath = ["src", "tests"]
+testpaths = ["tests"]

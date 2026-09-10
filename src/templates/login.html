@@ -1,3 +1,4 @@
+{# Sign-in. Accepts either the username or the email address. #}
 {% extends "_auth_layout.html" %}
 {% import "_icons.html" as ui %}
 {% set art_image = 'images/plant.jpg' %}
@@ -34,8 +35,12 @@ volatile compounds a stressed plant releases.
 
 <p class="auth-alt">New here? <a href="{{ url_for('auth.signup') }}">Create an account</a></p>
 
+{# The page used to advertise a real account from the shipped database
+   (test1@gmail.com / test1) as a try-it-out login. The database is no longer
+   shipped and no account is created for you, so the honest prompt is to make
+   one: signup takes four fields and no confirmation step. #}
 <div class="demo-note">
-  Try it without signing up:
-  <code>test1@gmail.com</code> / <code>test1</code>
+  A new account takes four fields and works immediately. Pick your plant on
+  the way in, or change it later under Settings.
 </div>
 {% endblock %}

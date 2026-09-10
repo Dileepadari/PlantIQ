@@ -1,13 +1,22 @@
-"""SQLite access helpers.
+"""SQLite access helpers, the schema, and the reference data that seeds it.
 
 One connection per request, stored on Flask's ``g``, closed automatically when
 the request ends. Rows come back as ``sqlite3.Row`` so templates and views can
 use column names instead of positional indexes.
+
+The database file itself is **not** in the repository. It used to be, which is
+how six people's names, email addresses and clear-text passwords ended up
+published. What the app actually needs from it is the plant threshold table, and
+that lives in ``data/plants.json`` where a diff can read it.
 """
 
+import json
 import sqlite3
+from pathlib import Path
 
 from flask import current_app, g
+
+DATA_DIR = Path(__file__).resolve().parent / "data"
 
 
 def get_db() -> sqlite3.Connection:
@@ -86,8 +95,47 @@ CREATE INDEX        IF NOT EXISTS idx_notif_status   ON notifications (status);
 """
 
 
+PLANT_COLUMNS = (
+    "plant_name", "VOC_min", "VOC_max", "temp_min", "temp_max",
+    "humid_min", "humid_max", "moist_min", "moist_max",
+    "CO2_min", "CO2_max", "light_intense_min", "light_intense_max",
+)
+
+
+def load_plants() -> list:
+    """The shipped plant threshold profiles."""
+    return json.loads((DATA_DIR / "plants.json").read_text())
+
+
+def seed_plants() -> int:
+    """Insert any shipped plant the database does not already have.
+
+    Matched by name rather than id, so re-running never duplicates a row and
+    never overwrites a threshold someone tuned for their own greenhouse.
+    """
+    db = get_db()
+    existing = {row["plant_name"] for row in db.execute("SELECT plant_name FROM plants")}
+    added = 0
+    for plant in load_plants():
+        if plant["plant_name"] in existing:
+            continue
+        db.execute(
+            f"INSERT INTO plants ({', '.join(PLANT_COLUMNS)}) "
+            f"VALUES ({', '.join('?' * len(PLANT_COLUMNS))})",
+            tuple(plant[column] for column in PLANT_COLUMNS),
+        )
+        added += 1
+    db.commit()
+    return added
+
+
 def init_db() -> None:
-    """Create any missing table or index. Safe to run on an existing file."""
+    """Create any missing table or index, then top up the plant profiles.
+
+    Safe to run on an existing file, and run on every start, so a fresh checkout
+    with no database file becomes a working install without a separate step.
+    """
     db = get_db()
     db.executescript(SCHEMA)
     db.commit()
+    seed_plants()

@@ -103,7 +103,8 @@ def fetch_readings(count: int = 10) -> dict:
             return cached["payload"]
 
     channel = current_app.config["THINGSPEAK_CHANNEL"]
-    url = f"https://api.thingspeak.com/channels/{channel}/feeds.json"
+    base = current_app.config["THINGSPEAK_BASE_URL"].rstrip("/")
+    url = f"{base}/channels/{channel}/feeds.json"
     params = {
         "results": count,
         "timezone": current_app.config["THINGSPEAK_TIMEZONE"],
@@ -190,7 +191,8 @@ def clear_cache() -> None:
 def fetch_range(start: str = None, end: str = None, limit: int = 8000) -> dict:
     """Feed entries between two ``YYYY-MM-DD`` dates. Never raises."""
     channel = current_app.config["THINGSPEAK_CHANNEL"]
-    url = f"https://api.thingspeak.com/channels/{channel}/feeds.json"
+    base = current_app.config["THINGSPEAK_BASE_URL"].rstrip("/")
+    url = f"{base}/channels/{channel}/feeds.json"
     params = {
         "timezone": current_app.config["THINGSPEAK_TIMEZONE"],
         "api_key": current_app.config["THINGSPEAK_READ_KEY"],
