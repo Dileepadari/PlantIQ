@@ -87,23 +87,65 @@ Real renders against a running instance, signed in through the app's own signup
 form. This page shows **dark mode**; the same gallery in
 light mode is at **[README-light.md](./README-light.md)**.
 
-| | |
-|---|---|
-| **Dashboard** <br> Every sensor now, the VOC trend, threshold table and open alerts <br><br> <img src="docs/screenshots/dark/dashboard.png" alt="PlantIQ dashboard" loading="lazy"> | **Statistics** <br> One chart per sensor across your chosen window <br><br> <img src="docs/screenshots/dark/statistics.png" alt="Per-sensor charts" loading="lazy"> |
-| **Analysis** <br> Each reading against the safe range for your plant <br><br> <img src="docs/screenshots/dark/analysis.png" alt="Threshold analysis" loading="lazy"> | **History** <br> Every reading between two dates, exportable as CSV <br><br> <img src="docs/screenshots/dark/history.png" alt="Reading history" loading="lazy"> |
-| **Alerts** <br> Threshold breaches the firmware reported, by severity <br><br> <img src="docs/screenshots/dark/alerts.png" alt="Alerts" loading="lazy"> | **Settings** <br> Which plant is being monitored, and how far the charts go back <br><br> <img src="docs/screenshots/dark/settings.png" alt="Settings" loading="lazy"> |
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <img src="./docs/screenshots/dark/dashboard.png" alt="Dashboard: current sensor values, the VOC trend chart and open alerts" loading="lazy">
+      <p align="center"><b>Dashboard</b><br><sub>Every sensor now, the VOC trend, the threshold table and open alerts.</sub></p>
+    </td>
+    <td width="33%" valign="top">
+      <img src="./docs/screenshots/dark/statistics.png" alt="Statistics: one chart per sensor over a selectable window" loading="lazy">
+      <p align="center"><b>Statistics</b><br><sub>One chart per sensor across the window you pick.</sub></p>
+    </td>
+    <td width="33%" valign="top">
+      <img src="./docs/screenshots/dark/analysis.png" alt="Analysis: each reading against the safe range for the monitored species" loading="lazy">
+      <p align="center"><b>Analysis</b><br><sub>Each reading judged against the safe range for your plant.</sub></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%" valign="top">
+      <img src="./docs/screenshots/dark/history.png" alt="History: readings between two dates with a CSV export" loading="lazy">
+      <p align="center"><b>History</b><br><sub>Every reading between two dates, exportable as CSV.</sub></p>
+    </td>
+    <td width="33%" valign="top">
+      <img src="./docs/screenshots/dark/alerts.png" alt="Alerts: threshold breaches reported by the firmware, grouped by severity" loading="lazy">
+      <p align="center"><b>Alerts</b><br><sub>Threshold breaches the firmware reported, by severity.</sub></p>
+    </td>
+    <td width="33%" valign="top">
+      <img src="./docs/screenshots/dark/settings.png" alt="Settings: the monitored species and the chart window" loading="lazy">
+      <p align="center"><b>Settings</b><br><sub>Which plant is monitored, and how far the charts go back.</sub></p>
+    </td>
+  </tr>
+</table>
 
-<p align="center"><b>Circuit</b> &middot; what each sensor is, and the path from breadboard to dashboard</p>
-<p align="center"><img src="docs/screenshots/dark/circuit.png" alt="Circuit and system diagram" loading="lazy"></p>
+<details>
+<summary><b>Circuit</b></summary>
+<br>
+<img src="./docs/screenshots/dark/circuit.png" alt="Circuit and system diagram: what each sensor is and the path from breadboard to dashboard" loading="lazy">
+</details>
 
 ## Responsive layout
 
-The sidebar collapses to a drawer, the metric grid reflows to two columns, and
-every table scrolls inside its own card rather than pushing the page sideways.
+Each image is its own device viewport, not a crop of the desktop layout. The sidebar collapses
+to a drawer, the metric grid reflows to two columns, and every table scrolls inside its own card
+rather than pushing the page sideways.
 
-| Phone, 390px | Phone, 390px | Tablet, 820px |
-|---|---|---|
-| <img src="docs/screenshots/responsive/dark/phone-dashboard.png" alt="Dashboard on a phone" loading="lazy"> | <img src="docs/screenshots/responsive/dark/phone-alerts.png" alt="Alerts on a phone" loading="lazy"> | <img src="docs/screenshots/responsive/dark/tablet-statistics.png" alt="Statistics on a tablet" loading="lazy"> |
+<table>
+  <tr>
+    <td width="25%" valign="top">
+      <img src="./docs/screenshots/responsive/dark/phone-dashboard.png" alt="Dashboard at 390px wide" loading="lazy">
+      <p align="center"><sub><b>Dashboard</b><br>390 x 844</sub></p>
+    </td>
+    <td width="25%" valign="top">
+      <img src="./docs/screenshots/responsive/dark/phone-alerts.png" alt="Alerts at 390px wide" loading="lazy">
+      <p align="center"><sub><b>Alerts</b><br>390 x 844</sub></p>
+    </td>
+    <td width="50%" valign="top">
+      <img src="./docs/screenshots/responsive/dark/tablet-statistics.png" alt="Statistics at 820px wide" loading="lazy">
+      <p align="center"><sub><b>Statistics</b><br>820 x 1180</sub></p>
+    </td>
+  </tr>
+</table>
 
 ## Features
 
